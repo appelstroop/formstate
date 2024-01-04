@@ -1,0 +1,14 @@
+{
+  "name": "formstate",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cd packages/core && pnpm build",
+    "prepack-nuxt": "cd packages/nuxt && pnpm dev:prepare && pnpm prepack"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}
