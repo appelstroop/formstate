@@ -29,7 +29,7 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
-    "@formstate/core": "^1.0.0",
+    "@formstate/core": "^0.1.1",
     "@nuxt/kit": "^3.8.2"
   },
   "devDependencies": {
