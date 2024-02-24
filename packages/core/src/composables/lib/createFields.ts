@@ -1,7 +1,9 @@
 import { Ref, nextTick, watch } from "vue";
 import {
+  Fields,
   FormRule,
   InternalField,
+  InternalFieldOrArrayField,
   InternalFormState,
   KindOfRule,
   Rule,
@@ -15,13 +17,40 @@ import {
 import { collectErrors, validateField } from "./validation";
 import { cloneDeep } from "../../utils/cloneDeep";
 
+export function push<T extends Record<string, unknown>>(
+  formState: Ref<InternalFormState<T>>
+) {
+  return function() {
+    
+  }
+}
+
 export function createFields<T extends Record<string, unknown>>(
   formState: Ref<InternalFormState<T>>
 ) {
   for (const [key, field] of Object.entries(formState.value.fields) as [
     keyof T,
-    InternalField<T[keyof T], T>
+    InternalFieldOrArrayField<T, keyof T>
   ][]) {
+    if (
+      Array.isArray(field) &&
+      field.every((item) => typeof item === "object" && item !== null)
+    ) {
+      (field as Fields<T>[]).forEach((f) => {
+        Object.entries(f).forEach(([key, value]) => {
+          createField(key, value, formState);
+        });
+      });
+      continue;
+    }
+    createField(key, field, formState);
+  }
+
+  function createField<T extends Record<string, unknown>>(
+    key: keyof T,
+    field: InternalField<T[keyof T], T>,
+    formState: Ref<InternalFormState<T>>
+  ) {
     field[fieldRules] = createValidationObject(field.rules) as Rule<
       T[keyof T],
       T
@@ -34,9 +63,9 @@ export function createFields<T extends Record<string, unknown>>(
     field.errors = [];
     field.pending = false;
 
-    field[fieldPrevValue]= cloneDeep(field.value);
+    field[fieldPrevValue] = cloneDeep(field.value);
     field.reset = () => {
-      formState.value[formIgnoreDirty]= true;
+      formState.value[formIgnoreDirty] = true;
       formState.value[formIgnoreValidation] = true;
       resetField(formState, field.name, field);
       formState.value[formValidationLock] = undefined;

@@ -153,14 +153,14 @@ function rule(value: string) {
 We can use the _setRules_ function to add rules in one go:
 
 ```typescript
-const { someRadio, someTextInput, formState, setRules } = useForm({
+const { someRadio, someText, formState, setRules } = useForm({
   someText: ""
   someRadio: "John",
 });
 
 
 setRules( {
-  someTextInput: [isRequired, validateIfJohn],
+  someText: [isRequired, validateIfJohn],
   someRadio: [validateIfJohn],
 });
 ```
@@ -213,7 +213,7 @@ to field rules and produce extra errors.
 
 ```typescript
 const formRule = () => {
-  if (someTextInput.value === "John" && someRadio.value === "John") {
+  if (someText.value === "John" && someRadio.value === "John") {
     return "John is not allowed on both fields";
   }
 };
@@ -223,7 +223,7 @@ formState.value.formRules = [formRule];
 // or
 
 setRules({
-  someTextInput: [required],
+  someText: [required],
   formRules: [formRule]
 });
 ```
@@ -234,7 +234,7 @@ Because validations are just simple functions, you can use any validation librar
 
 ```typescript
 const MyFormValidation = z.object({
-  someTextInput: z.string().min(1),
+  someText: z.string().min(1),
   someRadio: z.string(),
   someRange: z.union([z.string(), z.number()]),
 });
@@ -243,7 +243,7 @@ type MyForm = z.infer<typeof MyFormValidation>;
 
 // formState type is defered from zod
 const { formState, setRules } = useForm<MyForm>({
-  someTextInput: "",
+  someText: "",
   someRadio: "John",
   someRange: 5,
 });
@@ -257,7 +257,7 @@ const zodValidation = (value: unknown, name: string) => {
 };
 
 setRules({
-  someTextInput: [zodValidation],
+  someText: [zodValidation],
   someRadio: [zodValidation],
   someRange: [zodValidation],
 });
@@ -306,21 +306,31 @@ By default, validations on a field are performed when the field value changes. Y
 
 ```typescript
 setRules({
-  someTextInput: [{ rule: someAsyncValidation, autoValidate: false }],
+  someText: [{ rule: someAsyncValidation, autoValidate: false }],
 });
 
 watch(
-  () => someTextInput.focused,
+  () => someText.focused,
   async () => {
-    if (!someTextInput.focused) {
-      await someTextInput.validate();
+    if (!someText.focused) {
+      await someText.validate();
     }
   }
 );
 ```
 
 ## Using lazy v-model
-some text here
+In order to only perform validations when a field loses focus, we can also use v-model.lazy. This only updates the model value on a change event, triggering the value update only when an input loses focus or the user presses enter.
+
+```typescript
+setRules({
+  someText: [someAsyncValidation],
+});
+
+<template>
+ <input type="text" v-model.lazy="someText.value" />
+</template>
+```
 
 # Changing field and form values
 
@@ -419,7 +429,7 @@ const { someText } = useForm({
 Submitting your form can be as simple as:
 
 ```typescript
-const { values } = useForm({ someTextInput: "hello" });
+const { values } = useForm({ someText: "hello" });
 
 async function submit() {
    const { valid, errors, errorFields } = await validateForm();
@@ -467,5 +477,23 @@ const { someText } = useForm({ someText: "" });
 # Array values
  TODO
 
-# Reusing form
-TODO
+# Reusing formstate
+Formstate has a built in way to share state across components. If you provide a name as a first argument in the _useForm_ function, you can reuse the form. 
+
+```typescript
+// App.vue
+
+const { someText, formState } = useForm<MyFormType>('userForm', {
+  someText: "initial value",
+});
+
+
+
+// Component.vue
+// Typing is not automatic anymore, so you have to provide the type of the formState
+
+const { someText, formState } = useForm<MyFormType>('userForm');
+
+```
+
+

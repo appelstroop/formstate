@@ -93,8 +93,8 @@ export type InternalValidationResult = {
   errors: ErrorMessages;
 };
 
-type Fields<T extends Record<string, unknown>> = {
-  [P in keyof T]: Field<T[P], T>;
+export type Fields<T extends Record<string, unknown>> = {
+  [P in keyof T]: FieldOrArrayField<T, P>;
 };
 type FieldsInit<T extends Record<string, unknown>> = {
   [P in keyof T]: InitialFormStateField<T[P], T> | T[P];
@@ -153,8 +153,26 @@ export type FormResult<T extends Record<string, unknown>> = {
   >;
 } & FormResultField<T>;
 
+type FieldOrArrayField<
+  T extends Record<string, unknown>,
+  P extends keyof T
+> = T[P] extends Array<infer U>
+  ? U extends Record<string, unknown>
+    ? { [Y in keyof U]: Field<U, T> }[]
+    : Field<T[P], T>
+  : Field<T[P], T>;
+
+export type InternalFieldOrArrayField<
+  T extends Record<string, unknown>,
+  P extends keyof T
+> = T[P] extends Array<infer U>
+  ? U extends Record<string, unknown>
+    ? { [Y in keyof U]: InternalField<U, T> }[]
+    : InternalField<T[P], T>
+  : InternalField<T[P], T>;
+
 type FormResultField<T extends Record<string, unknown>> = {
-  [P in keyof T]: Field<T[P], T>;
+  [P in keyof T]: FieldOrArrayField<T, P>;
 };
 
 type Options = {
@@ -248,7 +266,9 @@ export function useForm<T extends Record<string, unknown>>(
       Object.keys(formState.value.fields).reduce(
         (acc, key) => ({
           ...acc,
-          [key]: formState.value.fields[key].value,
+          [key]:
+            formState.value.fields[key].value ??
+            processFieldArray(formState.value.fields[key]),
         }),
         {}
       ) as T
@@ -332,6 +352,12 @@ export function setStore(ref: Ref) {
 export function getStore() {
   return store;
 }
+// TODO: type this field array
+export function processFieldArray(field: any) {
+  return field.map((item: any) =>
+    Object.entries(item).reduce((a, [k, v]) => ({ ...a, [k]: v.value }), {})
+  );
+}
 
 export function getInitState<T extends Record<string, unknown>>(
   initState: InitialFormState<T> | T
@@ -341,6 +367,18 @@ export function getInitState<T extends Record<string, unknown>>(
       (acc, [key, value]) => {
         if (reservedKeys.includes(key)) {
           throw new Error(`UseForm: You cannot use the reserved key: ${key}`);
+        }
+        if (
+          Array.isArray(value) &&
+          value.every((item) => typeof item === "object" && item !== null)
+        ) {
+          const _v = value.map((item) =>
+            Object.entries(item).reduce(
+              (a, [k, v]) => ({ ...a, [k]: { value: v } }),
+              {}
+            )
+          );
+          return { ...acc, [key]: _v };
         }
         if (value?.hasOwnProperty("value")) {
           return {
@@ -376,7 +414,19 @@ export function setRules<T extends Record<string, unknown>>(
         formState.value.formRules = value;
         continue;
       }
-      formState.value.fields[key].rules = value;
+      const field = formState.value.fields[key];
+      if (
+        Array.isArray(field) &&
+        field.every((item) => typeof item === "object" && item !== null)
+      ) {
+        field.forEach((f) =>
+          Object.values(f).forEach((f: any) => {
+            f.rules = value;
+          })
+        );
+        continue;
+      }
+      (field as InternalField<T[keyof T], T>).rules = value;
     }
   };
 }

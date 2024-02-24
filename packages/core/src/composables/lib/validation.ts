@@ -52,7 +52,7 @@ export function validateForm<T extends Record<string, unknown>>(
       });
     };
     formState.value.pending = true;
-    await Promise.all(Object.values(formState.value.fields).map(promise));
+    await Promise.all(getAllFields(formState).map(promise));
 
     const result = await validateFormInternal(formState)({ promise: true });
     formState.value.pending = false;
@@ -60,12 +60,36 @@ export function validateForm<T extends Record<string, unknown>>(
   };
 }
 
+function getAllFields<T extends Record<string, unknown>>(
+  formState: Ref<InternalFormState<T>>
+) {
+  let fields = Object.values(formState.value.fields).filter(
+    (field) =>
+      !(
+        Array.isArray(field) &&
+        field.every((item) => typeof item === "object" && item !== null)
+      )
+  );
+  fields = [
+    ...fields,
+    ...Object.values(formState.value.fields)
+      .filter(
+        (field) =>
+          Array.isArray(field) &&
+          field.every((item) => typeof item === "object" && item !== null)
+      )
+      .flatMap((field) => field)
+      .map((field) => Object.values(field))
+      .flatMap((field) => field),
+  ];
+  return fields;
+}
+
 export function validationWatcher<T extends Record<string, unknown>>(
   formState: Ref<InternalFormState<T>>
 ) {
   return async () => {
-    const fields = Object.values(formState.value.fields);
-
+    const fields = getAllFields(formState);
     const { validate, validationLockId } =
       createValidateFieldFunction(formState);
 
@@ -76,6 +100,7 @@ export function validationWatcher<T extends Record<string, unknown>>(
       }
       return !deepEqual(cloneDeep(field.value), field[fieldPrevValue]);
     });
+
     const promise = async (field: InternalField<T[keyof T], T>) => {
       // save prev value, as vue doesnt give back old values in watch if we change a deep object or array
       field[fieldPrevValue] = cloneDeep(field.value);
@@ -109,11 +134,13 @@ export function createValidateFieldFunction<T extends Record<string, unknown>>(
     options: { promise?: boolean; alwaysValidate?: boolean }
   ) => {
     field.pending = true;
+
     const validationResult = await validateInternal(
       rules,
       [field.value, field.name, formState],
       options
     );
+
     // if the validationLock id doesnt match, it means another validation has
     // been trigger later
     if (formState.value[formValidationLock] === validationLockId) {
@@ -133,7 +160,6 @@ export function validateFormInternal<T extends Record<string, unknown>>(
   return (options?: { promise: boolean }) => {
     const promise = options?.promise ?? false;
     if (formState.value[formIgnoreValidation]) {
-     
       return { valid: true, errors: [], errorFields: {} };
     }
     formState.value.pending = true;
@@ -160,16 +186,15 @@ export function collectErrors<T extends Record<string, unknown>>(
   formState: Ref<InternalFormState<T>>,
   validationResults?: InternalValidationResult
 ) {
+  const fields = getAllFields(formState);
   const valid =
-    (
-      Object.values(formState.value.fields) as InternalField<T[keyof T], T>[]
-    ).every((field) => field.valid) &&
+    (fields as InternalField<T[keyof T], T>[]).every((field) => field.valid) &&
     (validationResults?.valid ?? true);
 
   const errors = [
-    ...(
-      Object.values(formState.value.fields) as InternalField<T[keyof T], T>[]
-    ).flatMap((field) => field.errors ?? []),
+    ...(fields as InternalField<T[keyof T], T>[]).flatMap(
+      (field) => field.errors ?? []
+    ),
     ...(validationResults?.errors ?? []),
   ];
   formState.value.errors = errors;
@@ -239,7 +264,7 @@ export function processValidationObject<K extends unknown>(
 
   // when normal function returns a promise
   const result = rule.rule(...callArguments);
-  if (result instanceof Promise && !promise ) {
+  if (result instanceof Promise && !promise) {
     return undefined;
   }
 

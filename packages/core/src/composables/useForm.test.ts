@@ -2,23 +2,20 @@
 import flushPromises from "flush-promises";
 import { describe, expect, test, vi } from "vitest";
 import { nextTick, watch } from "vue";
-import { formValidationLock, getInitState, setIsServer, store, useForm } from "./useForm";
-
-
+import {
+  formValidationLock,
+  getInitState,
+  setIsServer,
+  store,
+  useForm,
+} from "./useForm";
 
 export const customSerializer = {
   test(val: any) {
-    return (
-      typeof val === "object" &&
-      val !== null
-    );
+    return typeof val === "object" && val !== null;
   },
   print(val: any) {
-    return JSON.stringify(
-      { ...val, [formValidationLock]: "random"  },
-      null,
-      2
-    );
+    return JSON.stringify({ ...val, [formValidationLock]: "random" }, null, 2);
   },
 };
 
@@ -230,7 +227,7 @@ describe("useForm", () => {
       expect(someInput.errors).toEqual(["required"]);
     });
 
-    test("ignores autovalidate false rules", async() => {
+    test("ignores autovalidate false rules", async () => {
       const { someInput, setRules, formState } = useForm("form", {
         someInput: "hi",
       });
@@ -238,12 +235,12 @@ describe("useForm", () => {
       setRules({
         someInput: [
           { rule: () => "required", autoValidate: false },
-          async() => "other error",
+          async () => "other error",
         ],
       });
-      someInput.value = '';
+      someInput.value = "";
       await someInput.validate();
-      expect(someInput.errors).toEqual(['other error'])
+      expect(someInput.errors).toEqual(["other error"]);
     });
   });
 
@@ -310,5 +307,96 @@ describe("useForm", () => {
         }
       `);
     });
+  });
+
+  describe("array fields", () => {
+    test("renders an array field", () => {
+      const { formState } = useForm("form", {
+        someArray: [{ name: "hello", email: "" }],
+      });
+
+      expect(formState.value).toMatchInlineSnapshot(`
+        {
+          "fields": {
+            "someArray": [
+              {
+                "name": {
+                  "value": "hello",
+                  "name": "name",
+                  "dirty": false,
+                  "touched": false,
+                  "valid": true,
+                  "focused": false,
+                  "errors": [],
+                  "pending": false
+                },
+                "email": {
+                  "value": "",
+                  "name": "email",
+                  "dirty": false,
+                  "touched": false,
+                  "valid": true,
+                  "focused": false,
+                  "errors": [],
+                  "pending": false
+                }
+              }
+            ]
+          },
+          "initialFields": {
+            "someArray": [
+              {
+                "name": "hello",
+                "email": ""
+              }
+            ]
+          },
+          "context": {},
+          "dirty": false,
+          "valid": true,
+          "pending": false,
+          "touched": false,
+          "errors": [],
+          "errorFields": {}
+        }
+      `);
+    });
+
+    test("adds a new array item", async () => {
+      const { someArray } = useForm("form", {
+        someArray: [{ name: "hello", email: "" }],
+      });
+      someArray.push({ name: "other value", email: "" });
+      expect(someArray).toMatchInlineSnapshot(`
+        {
+          "0": {
+            "name": {
+              "value": "hello",
+              "name": "name",
+              "dirty": false,
+              "touched": false,
+              "valid": true,
+              "focused": false,
+              "errors": [],
+              "pending": false
+            },
+            "email": {
+              "value": "",
+              "name": "email",
+              "dirty": false,
+              "touched": false,
+              "valid": true,
+              "focused": false,
+              "errors": [],
+              "pending": false
+            }
+          },
+          "1": {
+            "name": "other value",
+            "email": ""
+          }
+        }
+      `);
+    })
   });
 });
