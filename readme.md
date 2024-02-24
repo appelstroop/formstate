@@ -224,7 +224,7 @@ formState.value.formRules = [formRule];
 
 setRules({
   someTextInput: [required],
-  formRules: [formRule]
+  formRules: [formRule],
 });
 ```
 
@@ -320,6 +320,7 @@ watch(
 ```
 
 ## Using lazy v-model
+
 some text here
 
 # Changing field and form values
@@ -456,6 +457,7 @@ const { resetForm } = useForm({ someText: "" });
 ```
 
 ## Reset individual fields
+
 ```typescript
 const { someText } = useForm({ someText: "" });
 
@@ -465,7 +467,108 @@ const { someText } = useForm({ someText: "" });
 ```
 
 # Array values
- TODO
+
+## Using array values in formstate
+
+In order to dynamically create form elements you can add an array as input
+
+```typescript
+  const { someArray } = useForm({
+    someArray: [
+    { name: "somename", email: "" },
+    { name: "", email: "" },
+  ]});
+
+  <fieldset v-for="(v, i) of someArray.value" :key="i">
+    <legend>array</legend>
+    <input
+      type="text"
+      v-model="v.name"
+    />
+    <input
+      type="text"
+      v-model="v.email"
+    />
+  </fieldset>
+
+```
+
+## Adding and removing array values
+
+You can directly modify the array (push, pop). But in order to not directly trigger validation everytime, it is better to update using the _setFields_ function.
+
+```typescript
+function addToArray() {
+  setFields({
+    someArray: [...someArray.value, { name: "", email: "" }],
+  });
+}
+function remove(index: number) {
+  setFields({
+    someArray: someArray.value.filter((_, i) => i !== index),
+  });
+}
+
+ <fieldset v-for="(v, i) of someArray.value" :key="i">
+    <legend>array</legend>
+    <input
+      type="text"
+      v-model="v.name"
+    />
+    <input
+      type="text"
+      v-model="v.email"
+    />
+    <button @click="remove(i)">Remove</button>
+  </fieldset>
+
+
+<button @click="addToArray">Add to array</button>
+```
+
+## Validating array fields
+
+```typescript
+const ZodType = z.object({
+  someArray: z.array(
+    z.object({
+      name: z.string().min(3),
+      email: z.string().email(),
+    })
+  ),
+});
+
+const zodValidation = (value: unknown, name: string) => {
+  // we pick the value from zod, as we don't want to validate whole formstate
+  const result = ZodType.pick({ [name]: true }).safeParse({ [name]: value });
+  if (!result.success) {
+    return result.error.errors;
+  }
+};
+
+setRules({
+  someArray: [zodValidation],
+});
+
+<fieldset v-for="(v, i) of someArray.value" :key="i">
+  <legend>array</legend>
+  <input
+    type="text"
+    v-model="v.name"
+    :class="{
+      invalid: someArray.errors.filter((e) => e.path[1] === i && e.path[2] === 'name').length > 0,
+    }"
+  />
+  <input
+    type="text"
+    v-model="v.email"
+    :class="{
+      invalid: someArray.errors.filter((e) => e.path[1] === i && e.path[2] === 'email').length > 0,
+    }"
+  />
+</fieldset>
+```
 
 # Reusing form
+
 TODO

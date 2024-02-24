@@ -128,11 +128,6 @@ export type InternalFormState<T extends Record<string, unknown>> =
     [formIgnoreValidation]: boolean;
     [formValidationLock]: string | undefined;
 
-    // _internals: {
-    //   ignoreDirty: boolean;
-    //   ignoreValidation: boolean;
-    //   validationLock: string | undefined;
-    // };
     [formRules]: FormRule<T>[];
   };
 
