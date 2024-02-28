@@ -116,11 +116,11 @@ console.log(values.value);
 
 ## Rules
 
-Anything - except a boolean -  you return from a rule function means that the field is invalid. 
-If you return undefined or true, it will be considered valid.
+Most values you return from a rule function means that the field is invalid. 
+If you return undefined, null, empty array or true, it will be considered valid.
 
 ```typescript
-// if you return false, it will generate an error message of required
+// if you return false, it will generate an error message of 'not valid'
 const isRequired = (value: string) => !!value;
 
 function rule(value: string, fieldName: string) {
