@@ -1,7 +1,7 @@
 {
   "name": "@formstate/core",
   "private": false,
-  "version": "0.1.4",
+  "version": "0.1.5",
   "type": "module",
   "license": "MIT",
   "main": "./dist/vue-formstate.umd.cjs",
@@ -18,7 +18,6 @@
       "require": "./dist/vue-formstate.umd.cjs"
     }
   },
-  
   "files": [
     "dist"
   ],

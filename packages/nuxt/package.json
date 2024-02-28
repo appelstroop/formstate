@@ -1,6 +1,6 @@
 {
   "name": "@formstate/nuxt",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Formstate nuxt plugin",
   "repository": {
     "type": "git",
@@ -32,7 +32,7 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
-    "@formstate/core": "^0.1.4",
+    "@formstate/core": "^0.1.5",
     "@nuxt/kit": "^3.8.2"
   },
   "devDependencies": {
