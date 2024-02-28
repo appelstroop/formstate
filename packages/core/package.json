@@ -1,11 +1,16 @@
 {
   "name": "@formstate/core",
   "private": false,
-  "version": "0.1.2",
+  "version": "0.1.3",
   "type": "module",
+  "license": "MIT",
   "main": "./dist/vue-formstate.umd.cjs",
   "module": "./dist/vue-formstate.js",
   "types": "./dist/index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/appelstroop/formstate"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -13,6 +18,7 @@
       "require": "./dist/vue-formstate.umd.cjs"
     }
   },
+  
   "files": [
     "dist"
   ],
