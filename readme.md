@@ -1,6 +1,6 @@
-# formstate
+# Vue Formstate
 
-formstate is a small vue3 library that makes it easy to handle your form state and perform validations. It features:
+Formstate is a small vue3 library that makes it easy to handle your form state and perform validations. It features:
 
 - A small footprint (2.7kb gzip)
 - No tight coupling with inputs, you have all the liberty to build your own inputs
@@ -116,10 +116,11 @@ console.log(values.value);
 
 ## Rules
 
-Anything you return from a rule function means that the field is invalid. If you return nothing, undefined or false, it will be considered valid.
+Anything - except a boolean -  you return from a rule function means that the field is invalid. 
+If you return undefined or true, it will be considered valid.
 
 ```typescript
-// if you false, it will generate an error message of required
+// if you return false, it will generate an error message of required
 const isRequired = (value: string) => !!value;
 
 function rule(value: string, fieldName: string) {
@@ -571,19 +572,17 @@ setRules({
 
 # Reusing form
 
-Formstate is built to reuse your form logic in different components! Simply add add a name to your form. 
+Formstate is built to reuse your form logic in different components! Simply add add a name to your form.
 If you use a form in another component and you want to infer types automatically, you should add add a
 type for the form structure:
 
 ```typescript
-
 // App.vue
 import { useForm } from "@formstate/core";
 
-const { someText, formState } = useForm('my-form', {
+const { someText, formState } = useForm("my-form", {
   someText: "initial value",
 });
-
 
 // SomeComponent.vue
 
@@ -591,7 +590,5 @@ type Form = {
   someText: string;
 };
 
-const { someText } = useForm<Form>('my-form')
-
-
+const { someText } = useForm<Form>("my-form");
 ```
