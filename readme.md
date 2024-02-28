@@ -571,4 +571,27 @@ setRules({
 
 # Reusing form
 
-TODO
+Formstate is built to reuse your form logic in different components! Simply add add a name to your form. 
+If you use a form in another component and you want to infer types automatically, you should add add a
+type for the form structure:
+
+```typescript
+
+// App.vue
+import { useForm } from "@formstate/core";
+
+const { someText, formState } = useForm('my-form', {
+  someText: "initial value",
+});
+
+
+// SomeComponent.vue
+
+type Form = {
+  someText: string;
+};
+
+const { someText } = useForm<Form>('my-form')
+
+
+```
