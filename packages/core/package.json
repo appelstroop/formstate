@@ -1,13 +1,14 @@
 {
   "name": "@formstate/core",
   "private": false,
-  "version": "0.1.1",
+  "version": "0.1.2",
   "type": "module",
   "main": "./dist/vue-formstate.umd.cjs",
   "module": "./dist/vue-formstate.js",
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "import": "./dist/vue-formstate.js",
       "require": "./dist/vue-formstate.umd.cjs"
     }

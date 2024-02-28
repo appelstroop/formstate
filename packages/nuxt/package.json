@@ -1,6 +1,6 @@
 {
   "name": "@formstate/nuxt",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "My new Nuxt module",
   "repository": "your-org/my-module",
   "license": "MIT",
@@ -29,7 +29,7 @@
     "test:watch": "vitest watch"
   },
   "dependencies": {
-    "@formstate/core": "^0.1.1",
+    "@formstate/core": "^0.1.2",
     "@nuxt/kit": "^3.8.2"
   },
   "devDependencies": {

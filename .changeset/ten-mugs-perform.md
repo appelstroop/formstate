@@ -1,5 +1,0 @@
----
-"@formstate/core": major
----
-
-something
